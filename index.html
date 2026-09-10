@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SETU</title>
+    <meta name="description" content="The React frontend project configured with Tailwind, GSAP, and React Router." />
+    <meta property="og:title" content="SETU" />
+    <meta property="og:description" content="The React frontend project configured with Tailwind, GSAP, and React Router." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script>
+      // Defensive workaround: Some browser extensions or environment polyfills 
+      // attempt to re-assign window.fetch in strict mode, crashing the app.
+      // This setter safely intercepts those attempts without throwing an error.
+      (function() {
+        if (typeof window !== 'undefined' && window.fetch) {
+          const originalFetch = window.fetch;
+          try {
+            Object.defineProperty(window, 'fetch', {
+              configurable: true,
+              enumerable: true,
+              get: function() { return originalFetch; },
+              set: function(newFetch) { 
+                console.warn('Prevented third-party script from overriding window.fetch'); 
+              }
+            });
+          } catch (e) {
+            // Ignore if already non-configurable
+          }
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
+

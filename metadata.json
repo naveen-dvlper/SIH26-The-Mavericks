@@ -1,0 +1,9 @@
+{
+  "name": "SETU",
+  "description": "The React frontend project configured with Tailwind, GSAP, and React Router.",
+  "requestFramePermissions": [
+    "camera",
+    "geolocation"
+  ],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
