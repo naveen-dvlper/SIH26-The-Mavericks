@@ -71,7 +71,8 @@ export default function ReportProblemPage() {
       // Create a local object URL for preview purposes instead of real upload since this is a prototype
       const fakeUploadedUrl = URL.createObjectURL(photo);
       
-      const response = await fetch('/api/complaints', {
+      const baseUrl = import.meta.env.VITE_BACKEND_URL || '';
+      const response = await fetch(`${baseUrl}/api/complaints`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 

@@ -14,7 +14,8 @@ export default function TrackComplaintPage() {
     setComplaint(null);
     
     try {
-      const response = await fetch(`/api/complaints/${complaintId}`);
+      const baseUrl = import.meta.env.VITE_BACKEND_URL || '';
+      const response = await fetch(`${baseUrl}/api/complaints/${complaintId}`);
       if (!response.ok) {
         throw new Error("Complaint not found or invalid ID.");
       }

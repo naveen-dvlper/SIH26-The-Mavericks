@@ -6,7 +6,8 @@ export default function ChallengesPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/api/complaints')
+    const baseUrl = import.meta.env.VITE_BACKEND_URL || '';
+    fetch(`${baseUrl}/api/complaints`)
       .then(res => res.json())
       .then(data => {
         setComplaints(data);
