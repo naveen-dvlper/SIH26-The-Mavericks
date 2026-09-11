@@ -6,6 +6,7 @@ import mongoose from "mongoose";
 import { MongoMemoryServer } from "mongodb-memory-server";
 import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
+import cors from "cors";
 
 dotenv.config();
 
@@ -14,6 +15,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = 3000;
 
+app.use(cors());
 app.use(express.json());
 
 // --- MongoDB Setup ---
