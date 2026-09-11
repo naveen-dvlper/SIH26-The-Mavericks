@@ -86,7 +86,7 @@ export default function DepartmentPortalPage() {
                       <span className="text-[13px] font-bold">Expires in 41h 12m</span>
                     </div>
                     <button className="bg-[#123158] hover:bg-[#0d223f] text-white text-[14px] font-bold px-5 py-2.5 rounded transition">
-                      Claim Problem
+                      Submit Interest
                     </button>
                   </div>
                 </div>
@@ -131,7 +131,7 @@ export default function DepartmentPortalPage() {
                       <span className="text-[13px] font-bold">Expires in 12h 05m</span>
                     </div>
                     <button className="bg-[#123158] hover:bg-[#0d223f] text-white text-[14px] font-bold px-5 py-2.5 rounded transition">
-                      Claim Problem
+                      Submit Interest
                     </button>
                   </div>
                 </div>

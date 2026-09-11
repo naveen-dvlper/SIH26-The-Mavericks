@@ -9,6 +9,7 @@ import TrackComplaintPage from './pages/TrackComplaintPage.jsx'
 import DepartmentPortalPage from './pages/DepartmentPortalPage.jsx'
 import ImpactDashboardPage from './pages/ImpactDashboardPage.jsx'
 import ChallengesPage from './pages/ChallengesPage.jsx'
+import LoginPage from './pages/LoginPage.jsx'
 
 export default function App() {
   return (
@@ -35,6 +36,7 @@ export default function App() {
             <Route path="/department" element={<DepartmentPortalPage />} />
             <Route path="/impact" element={<ImpactDashboardPage />} />
             <Route path="/challenges" element={<ChallengesPage />} />
+            <Route path="/login" element={<LoginPage />} />
           </Routes>
         </main>
 

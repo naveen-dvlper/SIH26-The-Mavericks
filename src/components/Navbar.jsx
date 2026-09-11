@@ -97,7 +97,7 @@ const Navbar = () => {
 
       {/* Bottom Nav Bar */}
       <div className="bg-[#123158] shadow-md relative z-20">
-        <div className="w-full px-6 h-[56px] flex items-center justify-start">
+        <div className="w-full px-6 h-[56px] flex items-center justify-between">
           <nav className="flex items-center h-full">
             <Link 
               to="/" 
@@ -130,6 +130,16 @@ const Navbar = () => {
               Impact Dashboard
             </Link>
           </nav>
+          
+          <div className="flex items-center h-full">
+            <Link 
+              to="/login" 
+              className={`h-full flex items-center px-5 text-[14px] font-bold transition-colors bg-[#0d223f] text-amber-400 hover:bg-[#0a1a30] hover:text-white border-l border-[#204482]`}
+            >
+              <LogIn className="w-4 h-4 mr-2" />
+              Portal Login
+            </Link>
+          </div>
         </div>
       </div>
     </header>
