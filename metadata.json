@@ -1,6 +1,6 @@
 {
   "name": "SETU",
-  "description": "The React frontend project configured with Tailwind, GSAP, and React Router.",
+  "description": "SETU - Civic Problem Resolution & Academic Challenge Network, Government of Jharkhand.",
   "requestFramePermissions": [
     "camera",
     "geolocation"

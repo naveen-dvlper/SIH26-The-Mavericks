@@ -96,50 +96,74 @@ export default function ReportProblemPage() {
   };
 
   if (successData) {
+    const aiReport = successData.aiAnalysis;
     return (
       <div className="min-h-screen bg-slate-50 py-12 flex items-center justify-center">
-        <div className="max-w-md w-full mx-auto px-6">
-          <div className="bg-white rounded-2xl p-8 shadow-sm text-center border border-slate-100">
-            <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
-              <CheckCircle2 className="w-10 h-10" />
+        <div className="max-w-xl w-full mx-auto px-6">
+          <div className="bg-white rounded-lg p-8 shadow-sm border border-slate-200">
+            <div className="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 border border-emerald-200">
+              <CheckCircle2 className="w-8 h-8" />
             </div>
-            <h1 className="text-3xl font-serif font-bold text-[#123158] mb-4">Complaint Submitted!</h1>
-            <p className="text-slate-600 mb-8 leading-relaxed">
-              Your issue has been successfully registered and is being reviewed by our AI triage system.
+            <h1 className="text-2xl font-serif font-bold text-[#123158] text-center mb-1">Problem Registered & Analyzed by AI</h1>
+            <p className="text-slate-600 text-center text-sm mb-6">
+              Saved into the state database. AI has generated a detailed triage report and submitted it to the State Portal Admin for routing approval.
             </p>
             
-            <div className="bg-slate-50 rounded-xl p-6 mb-8 text-left border border-slate-100">
-              <p className="text-sm text-slate-500 mb-1">Complaint ID</p>
-              <p className="text-xl font-bold text-[#123158] mb-4">{successData.complaintId}</p>
-              
-              <div className="flex justify-between items-center border-t border-slate-200 pt-4">
+            <div className="bg-slate-50 rounded-lg p-5 mb-6 text-left border border-slate-200 space-y-4">
+              <div className="flex justify-between items-center pb-3 border-b border-slate-200">
                 <div>
-                  <p className="text-sm text-slate-500 mb-1">Assigned Category</p>
-                  <p className="font-semibold text-slate-800">{successData.category}</p>
+                  <p className="text-xs uppercase font-bold text-slate-400">Tracking Reference</p>
+                  <p className="text-lg font-bold font-mono text-[#123158]">{successData.complaintId}</p>
                 </div>
-                <div className="text-right">
-                  <p className="text-sm text-slate-500 mb-1">Status</p>
-                  <p className="font-semibold text-amber-600 capitalize">{successData.status.replace(/_/g, ' ')}</p>
-                </div>
+                <span className="px-3 py-1 rounded text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200">
+                  Pending Admin Approval
+                </span>
               </div>
+
+              {aiReport && (
+                <div className="space-y-3 text-xs">
+                  <div className="bg-white p-3 rounded border border-slate-200">
+                    <p className="font-bold text-[#123158] mb-1 flex items-center gap-1.5">
+                      <span>🤖 AI Triage Report:</span>
+                      <span className="text-emerald-700">{aiReport.category}</span>
+                    </p>
+                    <p className="text-slate-600 leading-relaxed">{aiReport.reasoning}</p>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="bg-white p-2.5 rounded border border-slate-200">
+                      <p className="text-slate-400 font-semibold">Triage Recommendation</p>
+                      <p className="font-bold text-slate-800">
+                        {aiReport.recommendedPath === 'research' ? '🔬 Academic Research Required' : '🛠️ Routine Municipal Repair'}
+                      </p>
+                    </div>
+                    <div className="bg-white p-2.5 rounded border border-slate-200">
+                      <p className="text-slate-400 font-semibold">Estimated Budget Scope</p>
+                      <p className="font-bold text-slate-800">{aiReport.estimatedBudgetRange || 'Standard Dept Allocation'}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
             
-            <button 
-              onClick={() => navigate('/track')}
-              className="w-full bg-[#123158] hover:bg-[#0d223f] text-white text-[16px] font-bold py-4 rounded-lg shadow-sm transition flex items-center justify-center gap-2"
-            >
-              Track Your Complaint <ArrowRight className="w-5 h-5" />
-            </button>
-            <button 
-              onClick={() => {
-                setSuccessData(null);
-                setPhoto(null);
-                setDescription("");
-              }}
-              className="w-full mt-4 bg-white hover:bg-slate-50 text-[#123158] border border-slate-200 text-[15px] font-bold py-3.5 rounded-lg transition"
-            >
-              Report Another Issue
-            </button>
+            <div className="space-y-3">
+              <button 
+                onClick={() => navigate(`/track?id=${successData.complaintId}`)}
+                className="w-full bg-[#123158] hover:bg-[#0d223f] text-white text-[15px] font-bold py-3 rounded shadow-xs transition flex items-center justify-center gap-2 cursor-pointer"
+              >
+                Track Problem Lifecycle <ArrowRight className="w-4 h-4" />
+              </button>
+              <button 
+                onClick={() => {
+                  setSuccessData(null);
+                  setPhoto(null);
+                  setDescription("");
+                }}
+                className="w-full bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 text-[14px] font-semibold py-2.5 rounded transition cursor-pointer"
+              >
+                Report Another Citizen Problem
+              </button>
+            </div>
           </div>
         </div>
       </div>

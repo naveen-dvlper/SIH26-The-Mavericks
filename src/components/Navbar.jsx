@@ -1,13 +1,21 @@
 import React from 'react';
-import { Globe, PlusCircle, LogIn } from 'lucide-react';
+import { Globe, PlusCircle, LogIn, LogOut, ShieldCheck } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
-import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 const Navbar = () => {
   const { lang, setLang, t } = useLanguage();
+  const { user, isAuthenticated, isAdmin, logout } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
 
   const isActive = (path) => location.pathname === path;
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
   return (
     <header className="w-full flex flex-col font-sans z-50 bg-white">
@@ -129,16 +137,63 @@ const Navbar = () => {
             >
               Impact Dashboard
             </Link>
+
+            {/* Govt Admin Navigation Tab - Strictly visible ONLY for authenticated official government admins */}
+            {isAuthenticated && isAdmin && (
+              <Link 
+                to="/admin" 
+                id="nav-govt-admin"
+                className={`h-full flex items-center px-5 text-[15px] font-bold transition-colors border-b-4 ${
+                  isActive('/admin') 
+                    ? 'border-[#f5a623] text-white' 
+                    : 'border-transparent text-slate-100 hover:text-white hover:bg-white/5'
+                }`}
+              >
+                Govt Admin
+              </Link>
+            )}
+
+            {/* University Research Workspace Tab - Strictly visible ONLY after university login */}
+            {isAuthenticated && !isAdmin && (
+              <Link 
+                to="/workspace" 
+                id="nav-university-workspace"
+                className={`h-full flex items-center px-5 text-[15px] font-bold transition-colors border-b-4 ${
+                  isActive('/workspace') 
+                    ? 'border-[#f5a623] text-white' 
+                    : 'border-transparent text-slate-100 hover:text-white hover:bg-white/5'
+                }`}
+              >
+                Research Workspace
+              </Link>
+            )}
           </nav>
           
           <div className="flex items-center h-full">
-            <Link 
-              to="/login" 
-              className={`h-full flex items-center px-5 text-[14px] font-bold transition-colors bg-[#0d223f] text-amber-400 hover:bg-[#0a1a30] hover:text-white border-l border-[#204482]`}
-            >
-              <LogIn className="w-4 h-4 mr-2" />
-              Portal Login
-            </Link>
+            {isAuthenticated ? (
+              <div className="flex items-center h-full">
+                <span className="hidden lg:inline text-xs text-slate-300 mr-4 font-medium">
+                  {user?.name || user?.email}
+                </span>
+                <button
+                  onClick={handleLogout}
+                  id="nav-logout-btn"
+                  className="h-full flex items-center px-4 text-[14px] font-bold transition-colors bg-[#0d223f] text-slate-200 hover:bg-[#0a1a30] hover:text-white border-l border-[#204482]"
+                >
+                  <LogOut className="w-4 h-4 mr-1.5" />
+                  Logout
+                </button>
+              </div>
+            ) : (
+              <Link 
+                to="/login" 
+                id="nav-login-btn"
+                className="h-full flex items-center px-5 text-[14px] font-bold transition-colors bg-[#0d223f] text-amber-400 hover:bg-[#0a1a30] hover:text-white border-l border-[#204482]"
+              >
+                <LogIn className="w-4 h-4 mr-2" />
+                Portal Login
+              </Link>
+            )}
           </div>
         </div>
       </div>

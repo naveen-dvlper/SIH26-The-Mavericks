@@ -10,6 +10,9 @@ import DepartmentPortalPage from './pages/DepartmentPortalPage.jsx'
 import ImpactDashboardPage from './pages/ImpactDashboardPage.jsx'
 import ChallengesPage from './pages/ChallengesPage.jsx'
 import LoginPage from './pages/LoginPage.jsx'
+import AdminPortalPage from './pages/AdminPortalPage.jsx'
+import UniversityWorkspacePage from './pages/UniversityWorkspacePage.jsx'
+import ProtectedRoute from './components/ProtectedRoute.jsx'
 
 export default function App() {
   return (
@@ -37,6 +40,37 @@ export default function App() {
             <Route path="/impact" element={<ImpactDashboardPage />} />
             <Route path="/challenges" element={<ChallengesPage />} />
             <Route path="/login" element={<LoginPage />} />
+
+            {/* Strictly Guarded Government Admin Portal Routes */}
+            <Route 
+              path="/admin" 
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <AdminPortalPage />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/*" 
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <AdminPortalPage />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/govt-admin" 
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <AdminPortalPage />
+                </ProtectedRoute>
+              } 
+            />
+            {/* Dedicated Digital Research Workspace - opens after university login */}
+            <Route 
+              path="/workspace" 
+              element={<UniversityWorkspacePage />} 
+            />
           </Routes>
         </main>
 
