@@ -5,6 +5,7 @@ import {
   MapPin, Clock, Send, CheckCircle2, ShieldCheck, 
   Building2, AlertCircle, PlusCircle, ArrowRight, Lock
 } from 'lucide-react';
+import { apiService } from '../services/apiService';
 
 export default function UniversityWorkspacePage() {
   const { user, isAuthenticated, isUniversity } = useAuth();
@@ -32,19 +33,15 @@ export default function UniversityWorkspacePage() {
 
   const fetchComplaints = async () => {
     try {
-      const res = await fetch('/api/complaints');
-      if (res.ok) {
-        const data = await res.json();
-        if (Array.isArray(data)) {
-          setComplaints(data);
-          setLoading(false);
-          return;
-        }
+      const data = await apiService.getComplaints();
+      if (Array.isArray(data)) {
+        setComplaints(data);
       }
     } catch (err) {
-      console.warn(err);
+      console.warn('Failed to load complaints in workspace:', err);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => {
@@ -67,19 +64,14 @@ export default function UniversityWorkspacePage() {
 
     setPostingUpdate(true);
     try {
-      const res = await fetch(`/api/complaints/${activeProb.id}/workspace-update`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: newUpdateTitle,
-          note: newUpdateNote,
-          stage: newUpdateStage,
-          author: `${user?.name || 'Dr. Ananya Sen'} (${myUniversityName})`
-        })
+      const data = await apiService.postWorkspaceUpdate(activeProb.id, {
+        title: newUpdateTitle,
+        note: newUpdateNote,
+        stage: newUpdateStage,
+        author: `${user?.name || 'Dr. Ananya Sen'} (${myUniversityName})`
       });
 
-      const data = await res.json();
-      if (data.success) {
+      if (data && data.success) {
         setNewUpdateTitle('');
         setNewUpdateNote('');
         fetchComplaints();
@@ -98,19 +90,14 @@ export default function UniversityWorkspacePage() {
 
     setSubmittingFinal(true);
     try {
-      const res = await fetch(`/api/complaints/${activeProb.id}/submit-final-output`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          executiveSummary: execSummary,
-          deliverableType,
-          keyFindings,
-          recommendations
-        })
+      const data = await apiService.submitFinalOutput(activeProb.id, {
+        executiveSummary: execSummary,
+        deliverableType,
+        keyFindings,
+        recommendations
       });
 
-      const data = await res.json();
-      if (data.success) {
+      if (data && data.success) {
         setShowFinalModal(false);
         setExecSummary('');
         setKeyFindings('');
@@ -121,6 +108,7 @@ export default function UniversityWorkspacePage() {
       }
     } catch (err) {
       console.error(err);
+      alert('Error submitting deliverable: ' + (err.message || 'Network issue'));
     } finally {
       setSubmittingFinal(false);
     }

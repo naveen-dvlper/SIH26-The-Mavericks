@@ -1,22 +1,25 @@
 import React, { useState, useEffect } from 'react'
 import { MapPin, Clock, Camera, AlertCircle } from 'lucide-react'
+import { apiService } from '../services/apiService'
 
 export default function ChallengesPage() {
   const [complaints, setComplaints] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const baseUrl = import.meta.env.VITE_BACKEND_URL || '';
-    fetch(`${baseUrl}/api/complaints`)
-      .then(res => res.json())
+    let mounted = true;
+    apiService.getComplaints()
       .then(data => {
-        setComplaints(data);
-        setLoading(false);
+        if (mounted && Array.isArray(data)) {
+          setComplaints(data);
+          setLoading(false);
+        }
       })
       .catch(err => {
         console.error(err);
-        setLoading(false);
+        if (mounted) setLoading(false);
       });
+    return () => { mounted = false; };
   }, []);
 
   const getStatusColor = (status) => {

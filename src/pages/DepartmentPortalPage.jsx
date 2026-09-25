@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { MapPin, Clock, Send, CheckCircle2, Building2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { apiService } from '../services/apiService';
 
 export default function DepartmentPortalPage() {
   const { user, isAuthenticated, isUniversity } = useAuth();
@@ -19,19 +20,15 @@ export default function DepartmentPortalPage() {
 
   const fetchComplaints = async () => {
     try {
-      const res = await fetch('/api/complaints');
-      if (res.ok) {
-        const data = await res.json();
-        if (Array.isArray(data)) {
-          setComplaints(data);
-          setLoading(false);
-          return;
-        }
+      const data = await apiService.getComplaints();
+      if (Array.isArray(data)) {
+        setComplaints(data);
       }
     } catch (err) {
       console.warn('Failed to load complaints:', err);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => {
@@ -56,33 +53,28 @@ export default function DepartmentPortalPage() {
 
     setSubmittingInterest(true);
     try {
-      const res = await fetch(`/api/complaints/${selectedProblem.id}/university-interest`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          universityName: institutionName,
-          department: deptName,
-          nodalOfficer: user?.name || 'Dr. Ananya Sen',
-          contactEmail: user?.email || 'nodal@bitmesra.ac.in',
-          whyThisUniversity,
-          availableResources,
-          expectedTimelineWeeks
-        })
+      const data = await apiService.submitUniversityInterest(selectedProblem.id, {
+        universityName: institutionName,
+        department: deptName,
+        nodalOfficer: user?.name || 'Dr. Ananya Sen',
+        contactEmail: user?.email || 'nodal@bitmesra.ac.in',
+        whyThisUniversity,
+        availableResources,
+        expectedTimelineWeeks
       });
 
-      const data = await res.json();
-      if (data.success) {
+      if (data && data.success) {
         setFeedbackMessage(`Interest submitted successfully for ${selectedProblem.id}! AI has scored and ranked your proposal for Government Admin review.`);
         setSelectedProblem(null);
         setWhyThisUniversity('');
         setAvailableResources('');
         fetchComplaints();
       } else {
-        alert(data.error || 'Failed to submit interest');
+        alert(data?.error || 'Failed to submit interest');
       }
     } catch (err) {
       console.error(err);
-      alert('Error submitting interest');
+      alert('Error submitting interest: ' + (err.message || 'Network issue'));
     } finally {
       setSubmittingInterest(false);
       setTimeout(() => setFeedbackMessage(''), 7000);

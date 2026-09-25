@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Camera, MapPin, Mic, Loader2, Image as ImageIcon, CheckCircle2, ArrowRight } from 'lucide-react'
+import { apiService } from '../services/apiService'
 
 export default function ReportProblemPage() {
   const navigate = useNavigate();
@@ -71,25 +72,19 @@ export default function ReportProblemPage() {
       // Create a local object URL for preview purposes instead of real upload since this is a prototype
       const fakeUploadedUrl = URL.createObjectURL(photo);
       
-      const baseUrl = import.meta.env.VITE_BACKEND_URL || '';
-      const response = await fetch(`${baseUrl}/api/complaints`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          description, 
-          location,
-          photoUrl: fakeUploadedUrl 
-        })
+      const data = await apiService.createComplaint({
+        description,
+        location,
+        photoUrl: fakeUploadedUrl
       });
       
-      const data = await response.json();
-      if (data.success) {
+      if (data && data.success) {
         setSuccessData(data);
       } else {
-        setError(data.error || "Failed to submit complaint.");
+        setError(data?.error || "Failed to submit complaint.");
       }
     } catch (err) {
-      setError("Network error. Please try again.");
+      setError("Failed to submit problem report. Please try again.");
     } finally {
       setIsSubmitting(false);
     }

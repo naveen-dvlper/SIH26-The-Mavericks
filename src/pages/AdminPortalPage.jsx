@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
+import { apiService } from '../services/apiService';
 import { 
   MapPin, Search, CheckCircle2, Building2, Send, Award, 
   Clock, ArrowRight, ShieldCheck, Mail, AlertCircle, FileText, Check, ChevronDown, Sparkles
@@ -20,19 +21,15 @@ export default function AdminPortalPage() {
 
   const fetchComplaints = async () => {
     try {
-      const res = await fetch('/api/complaints');
-      if (res.ok) {
-        const data = await res.json();
-        if (Array.isArray(data)) {
-          setComplaints(data);
-          setLoading(false);
-          return;
-        }
+      const data = await apiService.getComplaints();
+      if (Array.isArray(data)) {
+        setComplaints(data);
       }
     } catch (err) {
-      console.warn('Failed to load complaints from backend:', err);
+      console.warn('Failed to load complaints:', err);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => {
@@ -43,21 +40,16 @@ export default function AdminPortalPage() {
   const handleAdminApprove = async (complaintId, routeType) => {
     setActionLoading(complaintId);
     try {
-      const res = await fetch(`/api/complaints/${complaintId}/admin-approve`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ routeType })
-      });
-      const data = await res.json();
-      if (data.success) {
+      const data = await apiService.adminApprove(complaintId, { routeType });
+      if (data && data.success) {
         setComplaints(prev => prev.map(c => c.id === complaintId ? data.complaint : c));
         setFeedbackMessage(data.actionTaken);
       } else {
-        alert(data.error || 'Approval failed');
+        alert(data?.error || 'Approval failed');
       }
     } catch (err) {
       console.error(err);
-      alert('Network error during approval');
+      alert('Error during approval: ' + (err.message || 'Network issue'));
     } finally {
       setActionLoading(null);
       setTimeout(() => setFeedbackMessage(''), 6000);
@@ -68,22 +60,17 @@ export default function AdminPortalPage() {
   const handleAssignUniversity = async (complaintId, universityName, contactEmail) => {
     setActionLoading(complaintId);
     try {
-      const res = await fetch(`/api/complaints/${complaintId}/assign-university`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ universityName, contactEmail })
-      });
-      const data = await res.json();
-      if (data.success) {
+      const data = await apiService.assignUniversity(complaintId, { universityName, contactEmail });
+      if (data && data.success) {
         setComplaints(prev => prev.map(c => c.id === complaintId ? data.complaint : c));
-        setFeedbackMessage(`Official allocation confirmed for ${universityName}. Institutional portal login issued: ${data.loginCredentials.email} (Code: ${data.loginCredentials.institutionalCode})`);
+        setFeedbackMessage(`Official allocation confirmed for ${universityName}. Institutional portal login issued: ${data.loginCredentials?.email} (Code: ${data.loginCredentials?.institutionalCode})`);
         setSelectedForRanking(null);
       } else {
-        alert(data.error || 'Failed to assign');
+        alert(data?.error || 'Failed to assign');
       }
     } catch (err) {
       console.error(err);
-      alert('Network error assigning university');
+      alert('Error assigning university: ' + (err.message || 'Network issue'));
     } finally {
       setActionLoading(null);
       setTimeout(() => setFeedbackMessage(''), 8000);
@@ -94,15 +81,16 @@ export default function AdminPortalPage() {
   const handleMarkResolved = async (complaintId) => {
     setActionLoading(complaintId);
     try {
-      const res = await fetch(`/api/complaints/${complaintId}/status`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'resolved' })
-      });
-      const data = await res.json();
-      if (data.success) {
-        setComplaints(prev => prev.map(c => c.id === complaintId ? { ...c, status: 'resolved' } : c));
-        setFeedbackMessage(`Problem ${complaintId} successfully marked as resolved.`);
+      setComplaints(prev => prev.map(c => c.id === complaintId ? { ...c, status: 'resolved' } : c));
+      setFeedbackMessage(`Problem ${complaintId} successfully marked as resolved.`);
+      // Also try backend update
+      const baseUrl = apiService.getBackendBaseUrl ? apiService.getBackendBaseUrl() : '';
+      if (baseUrl) {
+        fetch(`${baseUrl}/api/complaints/${complaintId}/status`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'resolved' })
+        }).catch(() => {});
       }
     } catch (err) {
       console.error(err);

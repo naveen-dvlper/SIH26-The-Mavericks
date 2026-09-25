@@ -4,6 +4,7 @@ import {
   Search, MapPin, Clock, CheckCircle2, AlertCircle, 
   Building2, Award, Mail, ChevronRight, ShieldCheck, ArrowRight, FileText 
 } from 'lucide-react';
+import { apiService } from '../services/apiService';
 
 export default function TrackComplaintPage() {
   const [searchParams] = useSearchParams();
@@ -19,14 +20,10 @@ export default function TrackComplaintPage() {
     setComplaint(null);
     
     try {
-      const response = await fetch(`/api/complaints/${idToFetch}`);
-      if (!response.ok) {
-        throw new Error("Complaint not found or invalid ID.");
-      }
-      const data = await response.json();
+      const data = await apiService.getComplaintById(idToFetch);
       setComplaint(data);
     } catch (err) {
-      setError(err.message);
+      setError(err.message || "Complaint not found or invalid ID.");
     } finally {
       setLoading(false);
     }

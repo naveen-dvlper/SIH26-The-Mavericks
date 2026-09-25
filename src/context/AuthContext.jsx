@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { getBackendBaseUrl } from '../services/apiService.js';
 
 const AuthContext = createContext(null);
 
@@ -184,11 +185,22 @@ export function AuthProvider({ children }) {
       let networkFailed = false;
 
       try {
-        const res = await fetch('https://sih26-the-mavericks.onrender.com/api/auth/login', {
+        const baseUrl = getBackendBaseUrl();
+        const controller = new AbortController();
+        const timeoutTimer = setTimeout(() => controller.abort(), 6000);
+
+        const res = await fetch(`${baseUrl}/api/auth/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: cleanEmail, password: cleanPassword, role })
+          body: JSON.stringify({ email: cleanEmail, password: cleanPassword, role }),
+          signal: controller.signal
         });
+        clearTimeout(timeoutTimer);
+
+        const contentType = res.headers.get('content-type') || '';
+        if (!contentType.includes('application/json')) {
+          throw new Error('Non-JSON response from server');
+        }
 
         const data = await res.json().catch(() => ({}));
 
@@ -208,7 +220,7 @@ export function AuthProvider({ children }) {
         }
       } catch (networkErr) {
         networkFailed = true;
-        console.warn('Network unreachable, checking against local secure credential directory:', networkErr);
+        console.warn('Network unreachable or timed out, checking against local secure credential directory:', networkErr.message || networkErr);
       }
 
       // If server explicitly returned an error (invalid credentials), reject immediately!
