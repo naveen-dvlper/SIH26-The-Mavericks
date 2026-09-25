@@ -6,6 +6,7 @@ import {
   Building2, AlertCircle, PlusCircle, ArrowRight, Lock
 } from 'lucide-react';
 import { apiService } from '../services/apiService';
+import { getRelatedProblemImage, handleProblemImageError } from '../utils/problemImageHelper';
 
 export default function UniversityWorkspacePage() {
   const { user, isAuthenticated, isUniversity } = useAuth();
@@ -258,15 +259,30 @@ export default function UniversityWorkspacePage() {
                   )}
                 </div>
 
-                {/* Problem Statement Card */}
+                {/* Problem Statement Card & Photo */}
                 <div className="bg-slate-50 border border-slate-200 rounded p-4 text-xs">
-                  <span className="font-bold text-[#123158] block mb-1">Problem Statement & Scope:</span>
-                  <p className="text-slate-700 leading-relaxed mb-2">{activeProb.description}</p>
-                  {activeProb.aiAnalysis?.reasoning && (
-                    <p className="text-slate-600 border-t border-slate-200 pt-2 text-[11px]">
-                      <strong className="text-slate-700">AI Context: </strong> {activeProb.aiAnalysis.reasoning}
-                    </p>
-                  )}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="md:col-span-2">
+                      <span className="font-bold text-[#123158] block mb-1">Problem Statement & Scope:</span>
+                      <p className="text-slate-700 leading-relaxed mb-2">{activeProb.description}</p>
+                      {activeProb.aiAnalysis?.reasoning && (
+                        <p className="text-slate-600 border-t border-slate-200 pt-2 text-[11px]">
+                          <strong className="text-slate-700">AI Context: </strong> {activeProb.aiAnalysis.reasoning}
+                        </p>
+                      )}
+                    </div>
+                    <div className="md:col-span-1">
+                      <span className="font-bold text-[#123158] block mb-1">Field Photographic Evidence:</span>
+                      <div className="h-32 bg-slate-100 rounded border border-slate-200 overflow-hidden">
+                        <img 
+                          src={getRelatedProblemImage(activeProb, activeProb.aiAnalysis?.category)} 
+                          alt="Problem Field Issue" 
+                          onError={(e) => handleProblemImageError(e, activeProb.aiAnalysis?.category)}
+                          className="w-full h-full object-cover transition-transform duration-300 hover:scale-105" 
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Final Output if already submitted */}

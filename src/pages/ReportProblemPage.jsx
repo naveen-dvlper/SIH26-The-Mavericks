@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Camera, MapPin, Mic, Loader2, Image as ImageIcon, CheckCircle2, ArrowRight } from 'lucide-react'
 import { apiService } from '../services/apiService'
+import { getRelatedProblemImage, handleProblemImageError } from '../utils/problemImageHelper'
 
 export default function ReportProblemPage() {
   const navigate = useNavigate();
@@ -60,8 +61,8 @@ export default function ReportProblemPage() {
   };
 
   const handleSubmit = async () => {
-    if (!description || !location || !photo) {
-      setError("Please fill out all required fields, including a photo.");
+    if (!description || !location) {
+      setError("Please describe the problem and specify the location.");
       return;
     }
     
@@ -69,17 +70,34 @@ export default function ReportProblemPage() {
     setError(null);
     
     try {
-      // Create a local object URL for preview purposes instead of real upload since this is a prototype
-      const fakeUploadedUrl = URL.createObjectURL(photo);
+      let finalPhotoUrl = null;
+
+      // If citizen selected a local photo, convert to portable base64 data URL
+      if (photo) {
+        finalPhotoUrl = await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = () => resolve(null);
+          reader.readAsDataURL(photo);
+        });
+      }
+
+      // If no photo was attached, automatically assign an appropriate online image related to the problem
+      if (!finalPhotoUrl) {
+        finalPhotoUrl = getRelatedProblemImage(description, location);
+      }
       
       const data = await apiService.createComplaint({
         description,
         location,
-        photoUrl: fakeUploadedUrl
+        photoUrl: finalPhotoUrl
       });
       
       if (data && data.success) {
-        setSuccessData(data);
+        setSuccessData({
+          ...data,
+          displayPhoto: finalPhotoUrl
+        });
       } else {
         setError(data?.error || "Failed to submit complaint.");
       }
@@ -92,6 +110,8 @@ export default function ReportProblemPage() {
 
   if (successData) {
     const aiReport = successData.aiAnalysis;
+    const photoToDisplay = successData.displayPhoto || successData.complaint?.photoUrl || getRelatedProblemImage(description, aiReport?.category);
+
     return (
       <div className="min-h-screen bg-slate-50 py-12 flex items-center justify-center">
         <div className="max-w-xl w-full mx-auto px-6">
@@ -103,6 +123,18 @@ export default function ReportProblemPage() {
             <p className="text-slate-600 text-center text-sm mb-6">
               Saved into the state database. AI has generated a detailed triage report and submitted it to the State Portal Admin for routing approval.
             </p>
+
+            {/* Problem Photo Preview */}
+            {photoToDisplay && (
+              <div className="w-full h-44 bg-slate-100 rounded-lg mb-6 overflow-hidden border border-slate-200">
+                <img 
+                  src={photoToDisplay} 
+                  alt="Registered problem" 
+                  onError={(e) => handleProblemImageError(e, aiReport?.category)}
+                  className="w-full h-full object-cover" 
+                />
+              </div>
+            )}
             
             <div className="bg-slate-50 rounded-lg p-5 mb-6 text-left border border-slate-200 space-y-4">
               <div className="flex justify-between items-center pb-3 border-b border-slate-200">

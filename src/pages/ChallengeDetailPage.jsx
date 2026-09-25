@@ -2,10 +2,12 @@ import React from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { ArrowLeft, CheckCircle2, Clock } from 'lucide-react'
 import { challengesData } from '../data/challenges'
+import { getRelatedProblemImage, handleProblemImageError } from '../utils/problemImageHelper'
 
 export default function ChallengeDetailPage() {
   const { id } = useParams()
   const challenge = challengesData.find(c => c.id === id) || challengesData[0]
+  const imageUrl = getRelatedProblemImage(challenge, challenge.category)
 
   return (
     <div className="py-12 bg-white min-h-screen">
@@ -30,7 +32,18 @@ export default function ChallengeDetailPage() {
           </div>
         </div>
 
-        <div className="space-y-6 text-base text-slate-700 leading-relaxed">
+        {imageUrl && (
+          <div className="w-full max-w-2xl h-64 bg-slate-100 rounded-lg overflow-hidden border border-slate-200 mb-8">
+            <img 
+              src={imageUrl} 
+              alt={challenge.title} 
+              onError={(e) => handleProblemImageError(e, challenge.category)}
+              className="w-full h-full object-cover" 
+            />
+          </div>
+        )}
+
+        <div className="space-y-6 text-base text-slate-700 leading-relaxed max-w-3xl">
           <h3 className="text-lg font-bold text-slate-900">Challenge Summary</h3>
           <p>{challenge.description}</p>
           <p>

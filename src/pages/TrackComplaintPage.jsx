@@ -5,6 +5,7 @@ import {
   Building2, Award, Mail, ChevronRight, ShieldCheck, ArrowRight, FileText 
 } from 'lucide-react';
 import { apiService } from '../services/apiService';
+import { getRelatedProblemImage, handleProblemImageError } from '../utils/problemImageHelper';
 
 export default function TrackComplaintPage() {
   const [searchParams] = useSearchParams();
@@ -201,12 +202,25 @@ export default function TrackComplaintPage() {
               </div>
             </div>
 
-            {/* Problem Description */}
-            <div>
-              <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Issue Description</h3>
-              <p className="text-xs text-slate-700 leading-relaxed bg-slate-50 p-3.5 rounded border border-slate-200">
-                {complaint.description}
-              </p>
+            {/* Problem Description & Photo */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="md:col-span-2">
+                <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Issue Description</h3>
+                <p className="text-xs text-slate-700 leading-relaxed bg-slate-50 p-3.5 rounded border border-slate-200 h-full">
+                  {complaint.description}
+                </p>
+              </div>
+              <div className="md:col-span-1">
+                <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Site Photo Evidence</h3>
+                <div className="h-32 bg-slate-100 rounded border border-slate-200 overflow-hidden">
+                  <img 
+                    src={getRelatedProblemImage(complaint, complaint.aiAnalysis?.category)} 
+                    alt="Problem Site" 
+                    onError={(e) => handleProblemImageError(e, complaint.aiAnalysis?.category)}
+                    className="w-full h-full object-cover transition-transform duration-300 hover:scale-105" 
+                  />
+                </div>
+              </div>
             </div>
 
             {/* AI Technical Analysis */}

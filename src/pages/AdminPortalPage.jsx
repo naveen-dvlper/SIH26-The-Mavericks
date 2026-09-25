@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import { apiService } from '../services/apiService';
+import { getRelatedProblemImage, handleProblemImageError } from '../utils/problemImageHelper';
 import { 
   MapPin, Search, CheckCircle2, Building2, Send, Award, 
   Clock, ArrowRight, ShieldCheck, Mail, AlertCircle, FileText, Check, ChevronDown, Sparkles
@@ -349,14 +350,12 @@ export default function AdminPortalPage() {
                     {/* Image Column */}
                     <div className="md:col-span-1">
                       <div className="h-44 bg-slate-100 rounded border border-slate-200 overflow-hidden flex items-center justify-center">
-                        {item.photoUrl ? (
-                          <img src={item.photoUrl} alt="Citizen Photo" className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="text-center p-3 text-slate-400 text-xs">
-                            <Building2 className="w-8 h-8 mx-auto mb-1 text-slate-300" />
-                            <span>No Photo Attached</span>
-                          </div>
-                        )}
+                        <img 
+                          src={getRelatedProblemImage(item, item.aiAnalysis?.category)} 
+                          alt="Citizen Problem Report" 
+                          onError={(e) => handleProblemImageError(e, item.aiAnalysis?.category)}
+                          className="w-full h-full object-cover transition-transform duration-300 hover:scale-105" 
+                        />
                       </div>
                     </div>
                   </div>

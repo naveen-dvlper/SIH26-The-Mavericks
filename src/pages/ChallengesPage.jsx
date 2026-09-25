@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { MapPin, Clock, Camera, AlertCircle } from 'lucide-react'
 import { apiService } from '../services/apiService'
+import { getRelatedProblemImage, handleProblemImageError } from '../utils/problemImageHelper'
 
 export default function ChallengesPage() {
   const [complaints, setComplaints] = useState([]);
@@ -56,11 +57,14 @@ export default function ChallengesPage() {
                     </span>
                   </div>
                   
-                  {item.photoUrl && !item.photoUrl.startsWith('blob:') && item.photoUrl !== 'placeholder_image_url' && (
-                    <div className="w-full h-40 bg-slate-100 rounded-md mb-4 overflow-hidden">
-                      <img src={item.photoUrl} alt="Issue" className="w-full h-full object-cover" />
-                    </div>
-                  )}
+                  <div className="w-full h-44 bg-slate-100 rounded-md mb-4 overflow-hidden border border-slate-200">
+                    <img 
+                      src={getRelatedProblemImage(item, item.aiAnalysis?.category)} 
+                      alt={item.aiAnalysis?.category || "Civic Problem"} 
+                      onError={(e) => handleProblemImageError(e, item.aiAnalysis?.category)}
+                      className="w-full h-full object-cover transition-transform duration-300 hover:scale-105" 
+                    />
+                  </div>
 
                   <h4 className="text-[17px] font-bold text-slate-800 mb-3 leading-snug">
                     {item.aiAnalysis?.category || "Uncategorized Issue"}

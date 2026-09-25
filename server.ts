@@ -114,6 +114,27 @@ if (process.env.GEMINI_API_KEY) {
   console.warn("⚠️ GEMINI_API_KEY is not set in .env");
 }
 
+// Helper to resolve related problem photos
+function getRelatedProblemPhoto(desc: string = "", category: string = ""): string {
+  const text = `${desc} ${category}`.toLowerCase();
+  if (text.includes("waterlog") || text.includes("flood") || text.includes("drain") || text.includes("stormwater")) {
+    return "https://images.unsplash.com/photo-1547683905-f686c993aae5?auto=format&fit=crop&w=800&q=80";
+  }
+  if (text.includes("pothole") || text.includes("asphalt") || text.includes("pavement") || text.includes("road")) {
+    return "https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?auto=format&fit=crop&w=800&q=80";
+  }
+  if (text.includes("pollution") || text.includes("dust") || text.includes("crushing") || text.includes("particulate") || text.includes("smog")) {
+    return "https://images.unsplash.com/photo-1611273426858-450d8e3c9fce?auto=format&fit=crop&w=800&q=80";
+  }
+  if (text.includes("culvert") || text.includes("retaining") || text.includes("dam") || text.includes("bridge") || text.includes("silt")) {
+    return "https://images.unsplash.com/photo-1584463699039-3c8106292271?auto=format&fit=crop&w=800&q=80";
+  }
+  if (text.includes("waste") || text.includes("garbage") || text.includes("dump") || text.includes("trash")) {
+    return "https://images.unsplash.com/photo-1530587191325-3db32d826c18?auto=format&fit=crop&w=800&q=80";
+  }
+  return "https://images.unsplash.com/photo-1541888946425-d0fbb18f15f6?auto=format&fit=crop&w=800&q=80";
+}
+
 // --- MongoDB Setup ---
 async function connectDB() {
   let MONGODB_URI = process.env.MONGODB_URI;
@@ -137,6 +158,7 @@ async function connectDB() {
           location: 'Sector 4, Bokaro Steel City',
           description: 'Chronic monsoon waterlogging due to blocked arterial stormwater culvert with reverse hydrological gradient. Causes recurrent flooding of 3 housing sectors and critical hospital approach roads during rains.',
           status: 'research_invitations_sent',
+          photoUrl: 'https://images.unsplash.com/photo-1547683905-f686c993aae5?auto=format&fit=crop&w=800&q=80',
           submittedAt: new Date(Date.now() - 18 * 3600000),
           aiAnalysis: {
             isValid: true,
@@ -214,6 +236,7 @@ async function connectDB() {
           location: 'Albert Ekka Chowk, Main Road, Ranchi',
           description: 'Dangerous pothole cluster and damaged asphalt carpet right at the central pedestrian intersection. Water ponding has eroded the sub-base.',
           status: 'pending_govt_approval',
+          photoUrl: 'https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?auto=format&fit=crop&w=800&q=80',
           submittedAt: new Date(Date.now() - 8 * 3600000),
           aiAnalysis: {
             isValid: true,
@@ -232,6 +255,7 @@ async function connectDB() {
           location: 'Saraikela Iron Ore & Crushing Belt',
           description: 'High particulate matter suspension (PM2.5 / PM10) and groundwater effluent runoff exceeding safe biological limits near 18 stone-crushing units.',
           status: 'in_research',
+          photoUrl: 'https://images.unsplash.com/photo-1611273426858-450d8e3c9fce?auto=format&fit=crop&w=800&q=80',
           submittedAt: new Date(Date.now() - 5 * 86400000),
           aiAnalysis: {
             isValid: true,
@@ -442,12 +466,15 @@ app.post("/api/complaints", async (req, res) => {
     
     // AI analyzes and creates detailed report
     const aiReport = await generateAIReport(description, location);
+    const effectivePhoto = (photoUrl && typeof photoUrl === 'string' && !photoUrl.startsWith('blob:') && photoUrl !== 'placeholder_image_url')
+      ? photoUrl
+      : getRelatedProblemPhoto(description, aiReport.category);
     
     const complaint = new Complaint({
       id: complaintId,
       location,
       description,
-      photoUrl,
+      photoUrl: effectivePhoto,
       status: "pending_govt_approval", // Sent to Portal Admin for verification/approval
       aiAnalysis: aiReport
     });
@@ -459,7 +486,8 @@ app.post("/api/complaints", async (req, res) => {
       complaintId,
       status: complaint.status,
       category: aiReport.category,
-      aiAnalysis: aiReport
+      aiAnalysis: aiReport,
+      complaint
     });
   } catch (error: any) {
     console.error("Submission error:", error);
@@ -471,7 +499,14 @@ app.post("/api/complaints", async (req, res) => {
 app.get("/api/complaints", async (req, res) => {
   try {
     const complaints = await Complaint.find().sort({ submittedAt: -1 });
-    res.json(complaints);
+    const sanitized = complaints.map(c => {
+      const obj = c.toObject();
+      if (!obj.photoUrl || obj.photoUrl.startsWith('blob:') || obj.photoUrl === 'placeholder_image_url') {
+        obj.photoUrl = getRelatedProblemPhoto(obj.description, obj.aiAnalysis?.category);
+      }
+      return obj;
+    });
+    res.json(sanitized);
   } catch (error) {
     res.status(500).json({ error: "Database error" });
   }
@@ -482,7 +517,11 @@ app.get("/api/complaints/:id", async (req, res) => {
   try {
     const complaint = await Complaint.findOne({ id: req.params.id });
     if (!complaint) return res.status(404).json({ error: "Complaint not found" });
-    res.json(complaint);
+    const obj = complaint.toObject();
+    if (!obj.photoUrl || obj.photoUrl.startsWith('blob:') || obj.photoUrl === 'placeholder_image_url') {
+      obj.photoUrl = getRelatedProblemPhoto(obj.description, obj.aiAnalysis?.category);
+    }
+    res.json(obj);
   } catch (error) {
     res.status(500).json({ error: "Database error" });
   }

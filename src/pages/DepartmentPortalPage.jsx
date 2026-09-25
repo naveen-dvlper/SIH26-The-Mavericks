@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { MapPin, Clock, Send, CheckCircle2, Building2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { apiService } from '../services/apiService';
+import { getRelatedProblemImage, handleProblemImageError } from '../utils/problemImageHelper';
 
 export default function DepartmentPortalPage() {
   const { user, isAuthenticated, isUniversity } = useAuth();
@@ -167,15 +168,12 @@ export default function DepartmentPortalPage() {
                   <div key={item.id} className="border border-slate-200 rounded-lg p-5 flex flex-col md:flex-row gap-6 hover:shadow-sm transition bg-white">
                     {/* Thumbnail Image */}
                     <div className="shrink-0 w-full md:w-[220px] h-[160px] bg-slate-100 rounded overflow-hidden flex items-center justify-center border border-slate-200">
-                      {item.photoUrl ? (
-                        <img 
-                          src={item.photoUrl} 
-                          alt="Problem issue" 
-                          className="w-full h-full object-cover" 
-                        />
-                      ) : (
-                        <Building2 className="w-8 h-8 text-slate-300" />
-                      )}
+                      <img 
+                        src={getRelatedProblemImage(item, item.aiAnalysis?.category)} 
+                        alt={item.aiAnalysis?.category || "Problem issue"} 
+                        onError={(e) => handleProblemImageError(e, item.aiAnalysis?.category)}
+                        className="w-full h-full object-cover transition-transform duration-300 hover:scale-105" 
+                      />
                     </div>
 
                     {/* Problem Content */}

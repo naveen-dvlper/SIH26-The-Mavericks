@@ -1,4 +1,5 @@
 import { SEED_COMPLAINTS, TOP_UNIVERSITIES_DATA } from '../data/seedComplaints.js';
+import { getRelatedProblemImage } from '../utils/problemImageHelper.js';
 
 const STORAGE_KEY = 'setu_complaints_data';
 const NETWORK_TIMEOUT_MS = 6000;
@@ -56,17 +57,31 @@ async function safeFetch(url, options = {}, timeoutMs = NETWORK_TIMEOUT_MS) {
 export function getLocalComplaints() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(SEED_COMPLAINTS));
-      return SEED_COMPLAINTS;
+    let list = SEED_COMPLAINTS;
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        list = parsed;
+      }
     }
-    const parsed = JSON.parse(raw);
-    if (Array.isArray(parsed) && parsed.length > 0) {
-      return parsed;
+
+    // Ensure every complaint has a valid problem-related photoUrl
+    let hasChanges = false;
+    const sanitized = list.map((item, idx) => {
+      if (!item.photoUrl || typeof item.photoUrl !== 'string' || item.photoUrl.trim() === '' || item.photoUrl.startsWith('blob:') || item.photoUrl === 'placeholder_image_url') {
+        hasChanges = true;
+        return {
+          ...item,
+          photoUrl: getRelatedProblemImage(item, item.aiAnalysis?.category || '', idx)
+        };
+      }
+      return item;
+    });
+
+    if (hasChanges || !raw) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(sanitized));
     }
-    // If empty array, repopulate seed complaints
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(SEED_COMPLAINTS));
-    return SEED_COMPLAINTS;
+    return sanitized;
   } catch (err) {
     console.warn('Error reading from localStorage, using seed complaints:', err);
     return SEED_COMPLAINTS;
@@ -144,8 +159,17 @@ export const apiService = {
       if (res.ok) {
         const data = await res.json();
         if (Array.isArray(data) && data.length > 0) {
-          saveLocalComplaints(data);
-          return data;
+          const sanitized = data.map((item, idx) => {
+            if (!item.photoUrl || typeof item.photoUrl !== 'string' || item.photoUrl.trim() === '' || item.photoUrl.startsWith('blob:') || item.photoUrl === 'placeholder_image_url') {
+              return {
+                ...item,
+                photoUrl: getRelatedProblemImage(item, item.aiAnalysis?.category || '', idx)
+              };
+            }
+            return item;
+          });
+          saveLocalComplaints(sanitized);
+          return sanitized;
         }
       }
     } catch (err) {
@@ -162,7 +186,11 @@ export const apiService = {
     try {
       const res = await safeFetch(`${baseUrl}/api/complaints/${id}`, { method: 'GET' });
       if (res.ok) {
-        return await res.json();
+        const item = await res.json();
+        if (item && (!item.photoUrl || item.photoUrl.startsWith('blob:') || item.photoUrl === 'placeholder_image_url')) {
+          item.photoUrl = getRelatedProblemImage(item, item.aiAnalysis?.category || '', 0);
+        }
+        return item;
       }
     } catch (err) {
       console.warn(`Backend /api/complaints/${id} unavailable, checking local store:`, err.message);
@@ -170,7 +198,12 @@ export const apiService = {
 
     const localList = getLocalComplaints();
     const found = localList.find(c => c.id === id);
-    if (found) return found;
+    if (found) {
+      if (!found.photoUrl || found.photoUrl.startsWith('blob:') || found.photoUrl === 'placeholder_image_url') {
+        found.photoUrl = getRelatedProblemImage(found, found.aiAnalysis?.category || '', 0);
+      }
+      return found;
+    }
 
     throw new Error(`Problem record ${id} not found.`);
   },
@@ -179,6 +212,10 @@ export const apiService = {
    * Submit a new complaint by a citizen.
    */
   async createComplaint({ location, description, photoUrl }) {
+    const effectivePhoto = (photoUrl && typeof photoUrl === 'string' && !photoUrl.startsWith('blob:') && photoUrl !== 'placeholder_image_url')
+      ? photoUrl
+      : getRelatedProblemImage({ description, location });
+
     const baseUrl = getBackendBaseUrl();
     let complaintData = null;
 
@@ -186,7 +223,7 @@ export const apiService = {
       const res = await safeFetch(`${baseUrl}/api/complaints`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ location, description, photoUrl })
+        body: JSON.stringify({ location, description, photoUrl: effectivePhoto })
       });
       if (res.ok) {
         complaintData = await res.json();
@@ -196,6 +233,9 @@ export const apiService = {
     }
 
     if (complaintData && complaintData.success) {
+      if (complaintData.complaint && (!complaintData.complaint.photoUrl || complaintData.complaint.photoUrl.startsWith('blob:'))) {
+        complaintData.complaint.photoUrl = effectivePhoto;
+      }
       return complaintData;
     }
 
@@ -206,7 +246,7 @@ export const apiService = {
       id: complaintId,
       location,
       description,
-      photoUrl,
+      photoUrl: effectivePhoto,
       status: 'pending_govt_approval',
       submittedAt: new Date().toISOString(),
       aiAnalysis: aiReport

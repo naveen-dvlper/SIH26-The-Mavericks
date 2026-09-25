@@ -6,6 +6,7 @@ export const SEED_COMPLAINTS = [
     location: 'Sector 4, Bokaro Steel City',
     description: 'Chronic monsoon waterlogging due to blocked arterial stormwater culvert with reverse hydrological gradient. Causes recurrent flooding of 3 housing sectors and critical hospital approach roads during rains.',
     status: 'research_invitations_sent',
+    photoUrl: 'https://images.unsplash.com/photo-1547683905-f686c993aae5?auto=format&fit=crop&w=800&q=80',
     submittedAt: new Date(Date.now() - 18 * 3600000).toISOString(),
     aiAnalysis: {
       isValid: true,
@@ -83,6 +84,7 @@ export const SEED_COMPLAINTS = [
     location: 'Albert Ekka Chowk, Main Road, Ranchi',
     description: 'Dangerous pothole cluster and damaged asphalt carpet right at the central pedestrian intersection. Water ponding has eroded the sub-base.',
     status: 'pending_govt_approval',
+    photoUrl: 'https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?auto=format&fit=crop&w=800&q=80',
     submittedAt: new Date(Date.now() - 8 * 3600000).toISOString(),
     aiAnalysis: {
       isValid: true,
@@ -101,6 +103,7 @@ export const SEED_COMPLAINTS = [
     location: 'Saraikela Iron Ore & Crushing Belt',
     description: 'High particulate matter suspension (PM2.5 / PM10) and groundwater effluent runoff exceeding safe biological limits near 18 stone-crushing units.',
     status: 'in_research',
+    photoUrl: 'https://images.unsplash.com/photo-1611273426858-450d8e3c9fce?auto=format&fit=crop&w=800&q=80',
     submittedAt: new Date(Date.now() - 5 * 86400000).toISOString(),
     aiAnalysis: {
       isValid: true,
@@ -149,6 +152,7 @@ export const SEED_COMPLAINTS = [
     location: 'Patratu Valley Dam Approach Road, Ramgarh',
     description: 'Cracked retaining culvert wall with localized silt accumulation blocking normal discharge flow into the reservoir spillway channel.',
     status: 'municipal_repair_assigned',
+    photoUrl: 'https://images.unsplash.com/photo-1584463699039-3c8106292271?auto=format&fit=crop&w=800&q=80',
     submittedAt: new Date(Date.now() - 3 * 86400000).toISOString(),
     aiAnalysis: {
       isValid: true,

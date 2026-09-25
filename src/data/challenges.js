@@ -8,7 +8,8 @@ export const challengesData = [
     status: "Under Review",
     statusColor: "bg-amber-50 text-amber-700 border-amber-200/60",
     priority: "High priority",
-    priorityDot: "bg-rose-600"
+    priorityDot: "bg-rose-600",
+    photoUrl: "https://images.unsplash.com/photo-1527668752968-14dc70a27c95?auto=format&fit=crop&w=800&q=80"
   },
   {
     id: "JS-2025-0037",
@@ -19,7 +20,8 @@ export const challengesData = [
     status: "Matched",
     statusColor: "bg-emerald-50 text-emerald-700 border-emerald-200/60",
     priority: "Medium priority",
-    priorityDot: "bg-amber-500"
+    priorityDot: "bg-amber-500",
+    photoUrl: "https://images.unsplash.com/photo-1570125909232-eb263c188f7e?auto=format&fit=crop&w=800&q=80"
   },
   {
     id: "JS-2025-0028",
@@ -30,6 +32,7 @@ export const challengesData = [
     status: "Approved",
     statusColor: "bg-blue-50 text-blue-700 border-blue-200/60",
     priority: "Medium priority",
-    priorityDot: "bg-amber-500"
+    priorityDot: "bg-amber-500",
+    photoUrl: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=800&q=80"
   }
 ];

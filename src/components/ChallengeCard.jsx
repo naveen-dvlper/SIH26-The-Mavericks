@@ -1,8 +1,11 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowRight } from 'lucide-react'
+import { getRelatedProblemImage, handleProblemImageError } from '../utils/problemImageHelper'
 
 export default function ChallengeCard({ item }) {
+  const imageUrl = getRelatedProblemImage(item, item.category);
+
   return (
     <article className="border border-slate-200 rounded p-6 bg-white hover:shadow-md transition flex flex-col justify-between">
       <div>
@@ -12,10 +15,22 @@ export default function ChallengeCard({ item }) {
             {item.status}
           </span>
         </div>
+
+        {imageUrl && (
+          <div className="w-full h-36 bg-slate-100 rounded mb-4 overflow-hidden">
+            <img 
+              src={imageUrl} 
+              alt={item.title || "Civic Challenge"} 
+              onError={(e) => handleProblemImageError(e, item.category)}
+              className="w-full h-full object-cover transition-transform duration-300 hover:scale-105" 
+            />
+          </div>
+        )}
+
         <h4 className="text-lg font-semibold text-slate-900 mb-2 leading-snug">
           {item.title}
         </h4>
-        <p className="text-sm text-slate-600 leading-relaxed mb-6">
+        <p className="text-sm text-slate-600 leading-relaxed mb-6 line-clamp-3">
           {item.description}
         </p>
       </div>
