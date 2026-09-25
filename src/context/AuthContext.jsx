@@ -184,7 +184,7 @@ export function AuthProvider({ children }) {
       let networkFailed = false;
 
       try {
-        const res = await fetch('/api/auth/login', {
+        const res = await fetch('https://sih26-the-mavericks.onrender.com/api/auth/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: cleanEmail, password: cleanPassword, role })
